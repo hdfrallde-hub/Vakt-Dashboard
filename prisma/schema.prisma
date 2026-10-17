@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id          String   @id
+  name        String
+  icon        String?
+  memberCount Int      @default(0)
+  joinedAt    DateTime @default(now())
+}
+
+model GuildSettings {
+  guildId String @id
+
+  // Moderering
+  logChannelId    String?
+  automodSpam     Boolean @default(true)
+  spamMaxMessages Int     @default(5)
+  spamIntervalSec Int     @default(6)
+  automodLinks    Boolean @default(false)
+  automodWords    Boolean @default(false)
+  bannedWords     String  @default("")
+  automodAction   String  @default("delete") // delete | timeout
+
+  // Välkomst
+  welcomeEnabled   Boolean @default(false)
+  welcomeChannelId String?
+  welcomeMessage   String  @default("Välkommen {user} till {server}! Du är medlem nummer {count}.")
+  goodbyeEnabled   Boolean @default(false)
+  goodbyeChannelId String?
+  goodbyeMessage   String  @default("{username} lämnade servern.")
+  autoRoleId       String?
+
+  updatedAt DateTime @updatedAt
+}
+
+model ModCase {
+  id            Int      @id @default(autoincrement())
+  guildId       String
+  caseNumber    Int
+  type          String // warn | kick | ban | timeout | automod
+  userId        String
+  userTag       String
+  moderatorId   String
+  moderatorTag  String
+  reason        String?
+  durationSec   Int?
+  createdAt     DateTime @default(now())
+
+  @@unique([guildId, caseNumber])
+  @@index([guildId, userId])
+}
